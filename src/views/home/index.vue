@@ -14,8 +14,7 @@
     <div class="btn-two">
       <div class="btn-item" @click="addControl">添加控件</div>
       <div class="btn-item" @click="baseDraw">基本绘制</div>
-      <div class="btn-item" @click="addQuery">查询图层</div>
-      <div class="btn-item" @click="removeQuery">删除查询</div>
+      <div class="btn-item" @click="removeLayer">清空地图</div>
       <div class="btn-item" @click="filterLayer">筛选过滤</div>
       <div class="btn-item" @click="heat">热力图</div>
     </div>
@@ -59,7 +58,8 @@ export default {
         style: {
           "version": 8,
           "sources": {},
-          "layers": []
+          "layers": [],
+          "glyphs": 'https://iserver.supermap.io/iserver/services/map-beijing/rest/maps/beijingMap/tileFeature/sdffonts/{fontstack}/{range}.pbf'
         },
         center: [120.12, 30.16], // 地图初始中心点
         zoom: 10 // 地图初始缩放级别
@@ -591,47 +591,50 @@ export default {
           spatialQueryMode: "INTERSECT" // 相交空间查询模式
         })
         // 创建任意几何范围查询实例
-        new FeatureService(urlTwo).getFeaturesByGeometry(geometryParam).then(function (serviceResult) {
+        new FeatureService(urlTwo).getFeaturesByGeometry(geometryParam).then((serviceResult) => {
           // 获取服务器返回的结果
-          let { features } = serviceResult.result
+          let features = serviceResult?.result?.features
           console.log('几何查询范围结果', features)
-          window.localStorage.setItem('queryFeatures', JSON.stringify(features))
+          if (features) {
+            this.map.getLayer('queryDatas') && this.map.removeLayer('queryDatas')
+            this.map.getSource('queryDatas') && this.map.removeSource('queryDatas')
+            this.map.addSource("queryDatas", {
+              "type": "geojson",
+              "data": features
+            })
+            this.map.addLayer({
+              "id": "queryDatas",
+              "type": "symbol",
+              "source": "queryDatas",
+              "paint": {
+              },
+              layout: {
+                "text-field": ['get', 'COUNTRY_CH']
+              }
+            })
+            this.idList = [...this.idList, 'queryDatas']
+            this.idList = [...new Set(this.idList)]
+            this.changeZoom()
+          }
         })
       }
     },
 
-    // 绘制查询图层
-    addQuery () {
-      let features = window.localStorage.getItem('queryFeatures')
-      if (!features) return
-      this.map.addSource("queryDatas", {
-        "type": "geojson",
-        "data": JSON.parse(features)
+    // 删除除了底图以外的图层
+    removeLayer () {
+      // console.log(this.map.getStyle().layers)
+      const list = ['chushi-layer', 'shiliang-layer', 'yingxiang-layer']
+      const removeList = this.idList.filter(item => {
+        return !list.includes(item)
       })
-      this.map.addLayer({
-        "id": "queryDatas",
-        "type": "circle",
-        "source": "queryDatas",
-        "paint": {
-          "circle-radius": 6, /* 圆的直径，单位像素 */
-          "circle-color": "blue", /* 圆的颜色 */
-          "circle-opacity": 0.5  /* 圆的颜色 */
+      this.idList = this.idList.filter(item => {
+        return list.includes(item)
+      })
+      removeList.forEach(item => {
+        if (this.map.getLayer(item)) {
+          this.map.removeLayer(item)
         }
       })
-      this.idList = [...this.idList, 'queryDatas']
-      this.changeZoom()
-    },
-
-    // 删除查询图层
-    removeQuery () {
-      if (this.map.getLayer('queryDatas')) {
-        this.map.removeLayer('queryDatas')
-        this.idList = this.idList.filter(item => {
-          return item !== 'queryDatas'
-        })
-      }
-      this.map.getSource('queryDatas') && this.map.removeSource('queryDatas')
-      window.localStorage.setItem('queryFeatures', null)
     },
 
     // 筛选过滤
