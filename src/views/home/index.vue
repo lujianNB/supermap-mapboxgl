@@ -23,7 +23,14 @@
 </template>
 
 <script>
-import { MeasureParameters, Unit, MeasureService, GetFeaturesByGeometryParameters, FeatureService, HeatMapLayer } from '@supermap/iclient-mapboxgl'
+import {
+  MeasureParameters,
+  Unit,
+  MeasureService,
+  GetFeaturesByGeometryParameters,
+  FeatureService,
+  HeatMapLayer
+} from '@supermap/iclient-mapboxgl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import '@/assets/css/mapbox-gl-draw.css'
 import * as turf from '@turf/turf'
@@ -257,6 +264,7 @@ export default {
             "type": "Feature",
             "properties": {
               "id": 1,
+              "value": 1,
               "name": "line-1"
             },
             "geometry": {
@@ -272,6 +280,7 @@ export default {
             "type": "Feature",
             "properties": {
               "id": 2,
+              "value": 2,
               "name": "line-2"
             },
             "geometry": {
@@ -287,6 +296,7 @@ export default {
             "type": "Feature",
             "properties": {
               "id": 3,
+              "value": 3,
               "name": "line-3"
             },
             "geometry": {
@@ -294,6 +304,22 @@ export default {
               "coordinates": [
                 [120.05, 30.00],
                 [120.10, 30.20]
+              ]
+            }
+          },
+          {
+            "id": 4,
+            "type": "Feature",
+            "properties": {
+              "id": 4,
+              "value": 4,
+              "name": "line-4"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [120.3, 30.15],
+                [120.25, 30.16]
               ]
             }
           }
@@ -307,6 +333,7 @@ export default {
         "layout": {
           "visibility": "visible"
         },
+        // filter: ['any', ['==', 'name', 'line-1'], ['==', 'name', 'line-4']],
         "maxzoom": 24,
         "paint": {
           "line-width": 8,
@@ -446,16 +473,16 @@ export default {
       })
       // this.map.setPaintProperty('图层id', 'key', 'value')
       // this.map.setLayoutProperty('图层id', 'key', 'value')
-      // if (name === 'line-layer') {
-      // this.map.setPaintProperty('line-layer', 'line-color', 'blue')
-      // this.map.setFeatureState(
-      //   {
-      //     source: 'line-source',
-      //     id: features[0].properties.id
-      //   },
-      //   { click: true }
-      // )
-      // }
+      if (name === 'line-layer') {
+        // this.map.setPaintProperty('line-layer', 'line-color', 'blue')
+        // this.map.setFeatureState(
+        //   {
+        //     source: 'line-source',
+        //     id: features[0].properties.id
+        //   },
+        //   { click: true }
+        // )
+      }
 
       // 定位
       this.map.flyTo({ center: coordinates })
